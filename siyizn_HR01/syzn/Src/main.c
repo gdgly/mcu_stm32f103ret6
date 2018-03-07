@@ -106,7 +106,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	osKernelInitialize ();               // Initialize RTOS Kernel for setup
 	InitUartIo();
-	///111
+
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
