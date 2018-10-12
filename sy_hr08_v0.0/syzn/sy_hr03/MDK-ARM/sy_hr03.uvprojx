@@ -7,13 +7,13 @@
 
   <Targets>
     <Target>
-      <TargetName>fstm_nsdtues</TargetName>
+      <TargetName>sy_hr03</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <pCCUsed>5060183::V5.06 update 2 (build 183)::ARMCC</pCCUsed>
       <TargetOption>
         <TargetCommonOption>
-          <Device>STM32F103RE</Device>
+          <Device>STM32F103ZE</Device>
           <Vendor>STMicroelectronics</Vendor>
           <PackID>Keil.STM32F1xx_DFP.2.2.0</PackID>
           <PackURL>http://www.keil.com/pack/</PackURL>
@@ -32,7 +32,7 @@
           <SLE66CMisc></SLE66CMisc>
           <SLE66AMisc></SLE66AMisc>
           <SLE66LinkerMisc></SLE66LinkerMisc>
-          <SFDFile>$$Device:STM32F103RE$SVD\STM32F103xx.svd</SFDFile>
+          <SFDFile>$$Device:STM32F103ZE$SVD\STM32F103xx.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath></BinPath>
@@ -47,14 +47,14 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>fstm_nsdtues\</OutputDirectory>
-          <OutputName>fstm_nsdtues</OutputName>
+          <OutputDirectory>sy_hr03\</OutputDirectory>
+          <OutputName>sy_hr03</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
-          <CreateHexFile>1</CreateHexFile>
+          <CreateHexFile>0</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
-          <ListingPath>./fstm_nsdtues/\</ListingPath>
+          <ListingPath></ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>0</CreateBatchFile>
@@ -133,14 +133,14 @@
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
-            <DriverSelection>4096</DriverSelection>
+            <DriverSelection>4107</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
-          <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3>"" ()</Flash3>
+          <Flash2>STLink\ST-LINKIII-KEIL_SWO.dll</Flash2>
+          <Flash3></Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
-          <pFcarmGrp>Application/User</pFcarmGrp>
+          <pFcarmGrp></pFcarmGrp>
           <pFcArmRoot></pFcArmRoot>
           <FcArmLst>0</FcArmLst>
         </Utilities>
@@ -324,17 +324,17 @@
             <uSurpInc>0</uSurpInc>
             <uC99>0</uC99>
             <useXO>0</useXO>
-            <v6Lang>0</v6Lang>
-            <v6LangP>0</v6LangP>
-            <vShortEn>0</vShortEn>
-            <vShortWch>0</vShortWch>
+            <v6Lang>1</v6Lang>
+            <v6LangP>1</v6LangP>
+            <vShortEn>1</vShortEn>
+            <vShortWch>1</vShortWch>
             <v6Lto>0</v6Lto>
             <v6WtE>0</v6WtE>
             <VariousControls>
               <MiscControls>--C99</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xE</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;                                                             ../Drivers/STM32F1xx_HAL_Driver/Inc;                                                             ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;                                                             ../Drivers/CMSIS/Include;                                                             ../Drivers/CMSIS/Device/ST/STM32F1xx/Include;                                                           ../../common/Inc</IncludePath>
+              <IncludePath>../Drivers/STM32F1xx_HAL_Driver/Inc;                   ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;                   ../Drivers/CMSIS/Include;                   ../Drivers/CMSIS/Device/ST/STM32F1xx/Include;                   ../../common/Inc;                   ../Inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -375,27 +375,65 @@
       </TargetOption>
       <Groups>
         <Group>
+          <GroupName>SerialDatagramBase</GroupName>
+          <Files>
+            <File>
+              <FileName>bsp_eeprom.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\common\Src\bsp_eeprom.c</FilePath>
+            </File>
+            <File>
+              <FileName>misc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\common\Src\misc.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart-API.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\common\Src\uart-API.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart-line-IO.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\common\Src\uart-line-IO.c</FilePath>
+            </File>
+            <File>
+              <FileName>IOI2C.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\common\Src\IOI2C.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User</GroupName>
+          <Files>
+            <File>
+              <FileName>stm32f1xx_it.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Src/stm32f1xx_it.c</FilePath>
+            </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Src/main.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f1xx_hal_msp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Src/stm32f1xx_hal_msp.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/MDK-ARM</GroupName>
+        </Group>
+        <Group>
           <GroupName>Drivers/STM32F1xx_HAL_Driver</GroupName>
           <Files>
             <File>
-              <FileName>stm32f1xx_hal_rcc.c</FileName>
+              <FileName>stm32f1xx_hal_tim.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f1xx_hal_cortex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f1xx_hal_uart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f1xx_hal_pwr.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c</FilePath>
+              <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c</FilePath>
             </File>
             <File>
               <FileName>stm32f1xx_hal_dma.c</FileName>
@@ -413,9 +451,14 @@
               <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f1xx_hal_tim_ex.c</FileName>
+              <FileName>stm32f1xx_hal_rcc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c</FilePath>
+              <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f1xx_hal_cortex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c</FilePath>
             </File>
             <File>
               <FileName>stm32f1xx_hal_rcc_ex.c</FileName>
@@ -423,19 +466,29 @@
               <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f1xx_hal_tim.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32f1xx_hal_flash_ex.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c</FilePath>
             </File>
             <File>
+              <FileName>stm32f1xx_hal_pwr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32f1xx_hal_flash.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f1xx_hal_tim_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f1xx_hal_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c</FilePath>
             </File>
             <File>
               <FileName>stm32f1xx_hal_adc.c</FileName>
@@ -450,103 +503,25 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Application/User</GroupName>
-          <Files>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/main.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f1xx_it.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/stm32f1xx_it.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f1xx_hal_msp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/stm32f1xx_hal_msp.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Application/MDK-ARM</GroupName>
-        </Group>
-        <Group>
           <GroupName>Drivers/CMSIS</GroupName>
         </Group>
         <Group>
           <GroupName>SerialDatagramTasks</GroupName>
           <Files>
             <File>
-              <FileName>thread_of_LCM_uart.c</FileName>
+              <FileName>thread_of_development.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Src\thread_of_LCM_uart.c</FilePath>
+              <FilePath>..\Src\thread_of_development.c</FilePath>
             </File>
             <File>
-              <FileName>thread_hc05.c</FileName>
+              <FileName>device_ctrl.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Src\thread_hc05.c</FilePath>
+              <FilePath>..\Src\device_ctrl.c</FilePath>
             </File>
             <File>
-              <FileName>thread_of_accelnet.c</FileName>
+              <FileName>thread_of_lcm_uart.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Src\thread_of_accelnet.c</FilePath>
-            </File>
-            <File>
-              <FileName>mcu_stopdode.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Src\mcu_stopdode.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>SerialDatagramBase</GroupName>
-          <Files>
-            <File>
-              <FileName>misc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\common\Src\misc.c</FilePath>
-            </File>
-            <File>
-              <FileName>uart-API.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\common\Src\uart-API.c</FilePath>
-            </File>
-            <File>
-              <FileName>uart-line-IO.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\common\Src\uart-line-IO.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>SerialDeviceBase</GroupName>
-          <Files>
-            <File>
-              <FileName>HC05.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Src\HC05.c</FilePath>
-            </File>
-            <File>
-              <FileName>xbusmessage.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\common\Src\xbusmessage.c</FilePath>
-            </File>
-            <File>
-              <FileName>xbusparser.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\common\Src\xbusparser.c</FilePath>
-            </File>
-            <File>
-              <FileName>xbusutility.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\common\Src\xbusutility.c</FilePath>
-            </File>
-            <File>
-              <FileName>xsdeviceid.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\common\Src\xsdeviceid.c</FilePath>
+              <FilePath>..\Src\thread_of_lcm_uart.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -562,30 +537,30 @@
 
   <RTE>
     <apis>
-      <api Capiversion="1.0" Cclass="CMSIS" Cgroup="RTOS" exclusive="1">
-        <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="4.5.0"/>
+      <api Capiversion="1.0.0" Cclass="CMSIS" Cgroup="RTOS" exclusive="1">
+        <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="5.1.0"/>
         <targetInfos>
-          <targetInfo name="fstm_nsdtues"/>
+          <targetInfo name="sy_hr03"/>
         </targetInfos>
       </api>
     </apis>
     <components>
-      <component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="4.3.0" condition="Cortex-M Device">
-        <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="4.5.0"/>
+      <component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="5.0.2" condition="ARMv6_7_8-M Device">
+        <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="5.1.0"/>
         <targetInfos>
-          <targetInfo name="fstm_nsdtues"/>
+          <targetInfo name="sy_hr03"/>
         </targetInfos>
       </component>
-      <component Cclass="CMSIS" Cgroup="RTOS" Csub="Keil RTX" Cvendor="ARM" Cversion="4.80.0" condition="Cortex-M Device Startup">
-        <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="4.5.0"/>
+      <component Capiversion="1.0.0" Cclass="CMSIS" Cgroup="RTOS" Csub="Keil RTX" Cvendor="ARM" Cversion="4.81.1" condition="RTOS RTX">
+        <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="5.1.0"/>
         <targetInfos>
-          <targetInfo name="fstm_nsdtues"/>
+          <targetInfo name="sy_hr03"/>
         </targetInfos>
       </component>
       <component Cclass="Device" Cgroup="Startup" Cvendor="Keil" Cversion="1.0.0" condition="STM32F1xx CMSIS">
-        <package name="STM32F1xx_DFP" schemaVersion="1.2" url="http://www.keil.com/pack/" vendor="Keil" version="2.1.0"/>
+        <package name="STM32F1xx_DFP" schemaVersion="1.4.0" url="http://www.keil.com/pack/" vendor="Keil" version="2.2.0"/>
         <targetInfos>
-          <targetInfo name="fstm_nsdtues"/>
+          <targetInfo name="sy_hr03"/>
         </targetInfos>
       </component>
     </components>
@@ -595,31 +570,31 @@
         <component Capiversion="1.0.0" Cclass="CMSIS" Cgroup="RTOS" Csub="Keil RTX" Cvendor="ARM" Cversion="4.81.1" condition="RTOS RTX"/>
         <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="5.1.0"/>
         <targetInfos>
-          <targetInfo name="fstm_nsdtues"/>
+          <targetInfo name="sy_hr03"/>
         </targetInfos>
       </file>
       <file attr="config" category="header" name="RTE_Driver\Config\RTE_Device.h" version="1.1.2">
-        <instance index="0">RTE\Device\STM32F103RE\RTE_Device.h</instance>
+        <instance index="0">RTE\Device\STM32F103ZE\RTE_Device.h</instance>
         <component Cclass="Device" Cgroup="Startup" Cvendor="Keil" Cversion="1.0.0" condition="STM32F1xx CMSIS"/>
         <package name="STM32F1xx_DFP" schemaVersion="1.4.0" url="http://www.keil.com/pack/" vendor="Keil" version="2.2.0"/>
         <targetInfos>
-          <targetInfo name="fstm_nsdtues"/>
+          <targetInfo name="sy_hr03"/>
         </targetInfos>
       </file>
       <file attr="config" category="source" condition="STM32F1xx HD ARMCC" name="Device\Source\ARM\startup_stm32f10x_hd.s" version="1.0.0">
-        <instance index="0">RTE\Device\STM32F103RE\startup_stm32f10x_hd.s</instance>
+        <instance index="0">RTE\Device\STM32F103ZE\startup_stm32f10x_hd.s</instance>
         <component Cclass="Device" Cgroup="Startup" Cvendor="Keil" Cversion="1.0.0" condition="STM32F1xx CMSIS"/>
         <package name="STM32F1xx_DFP" schemaVersion="1.4.0" url="http://www.keil.com/pack/" vendor="Keil" version="2.2.0"/>
         <targetInfos>
-          <targetInfo name="fstm_nsdtues"/>
+          <targetInfo name="sy_hr03"/>
         </targetInfos>
       </file>
       <file attr="config" category="source" name="Device\Source\system_stm32f10x.c" version="1.0.0">
-        <instance index="0">RTE\Device\STM32F103RE\system_stm32f10x.c</instance>
+        <instance index="0">RTE\Device\STM32F103ZE\system_stm32f10x.c</instance>
         <component Cclass="Device" Cgroup="Startup" Cvendor="Keil" Cversion="1.0.0" condition="STM32F1xx CMSIS"/>
         <package name="STM32F1xx_DFP" schemaVersion="1.4.0" url="http://www.keil.com/pack/" vendor="Keil" version="2.2.0"/>
         <targetInfos>
-          <targetInfo name="fstm_nsdtues"/>
+          <targetInfo name="sy_hr03"/>
         </targetInfos>
       </file>
     </files>

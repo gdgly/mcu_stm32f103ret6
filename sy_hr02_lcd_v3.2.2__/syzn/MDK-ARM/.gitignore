@@ -1,0 +1,7 @@
+/startup_stm32f103xe.s
+/*.uvoptx
+/DebugConfig/
+/fstm_nsdtues/
+/startup_stm32f103xe.lst
+*.uvguix.*
+/startup_stm32f10x_hd.lst

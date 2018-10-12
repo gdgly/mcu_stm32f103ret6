@@ -334,7 +334,7 @@
               <MiscControls>--C99</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xE</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;                                                             ../Drivers/STM32F1xx_HAL_Driver/Inc;                                                             ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;                                                             ../Drivers/CMSIS/Include;                                                             ../Drivers/CMSIS/Device/ST/STM32F1xx/Include;                                                           ../../common/Inc</IncludePath>
+              <IncludePath>                                     ../Drivers/STM32F1xx_HAL_Driver/Inc;                                                                                                                ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;                                                                                                                ../Drivers/CMSIS/Include;                                                                                                                ../Drivers/CMSIS/Device/ST/STM32F1xx/Include;                                                                                                              ../../common/Inc;                                                                          ../Inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -450,26 +450,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Application/User</GroupName>
-          <Files>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/main.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f1xx_it.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/stm32f1xx_it.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f1xx_hal_msp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/stm32f1xx_hal_msp.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>Application/MDK-ARM</GroupName>
         </Group>
         <Group>
@@ -489,14 +469,14 @@
               <FilePath>..\Src\thread_hc05.c</FilePath>
             </File>
             <File>
+              <FileName>thread_of_iot_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\thread_of_iot_uart.c</FilePath>
+            </File>
+            <File>
               <FileName>thread_of_accelnet.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Src\thread_of_accelnet.c</FilePath>
-            </File>
-            <File>
-              <FileName>mcu_stopdode.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Src\mcu_stopdode.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -529,24 +509,29 @@
               <FilePath>..\Src\HC05.c</FilePath>
             </File>
             <File>
-              <FileName>xbusmessage.c</FileName>
+              <FileName>bsp_eeprom.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\common\Src\xbusmessage.c</FilePath>
+              <FilePath>..\Src\bsp_eeprom.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/User</GroupName>
+          <Files>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Src/main.c</FilePath>
             </File>
             <File>
-              <FileName>xbusparser.c</FileName>
+              <FileName>stm32f1xx_it.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\common\Src\xbusparser.c</FilePath>
+              <FilePath>../Src/stm32f1xx_it.c</FilePath>
             </File>
             <File>
-              <FileName>xbusutility.c</FileName>
+              <FileName>stm32f1xx_hal_msp.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\common\Src\xbusutility.c</FilePath>
-            </File>
-            <File>
-              <FileName>xsdeviceid.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\common\Src\xsdeviceid.c</FilePath>
+              <FilePath>../Src/stm32f1xx_hal_msp.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -598,7 +583,7 @@
           <targetInfo name="fstm_nsdtues"/>
         </targetInfos>
       </file>
-      <file attr="config" category="header" name="RTE_Driver\Config\RTE_Device.h" version="1.1.2">
+      <file attr="config" category="header" name="RTE_Driver\Config\RTE_Device.h" version="1.1.1">
         <instance index="0">RTE\Device\STM32F103RE\RTE_Device.h</instance>
         <component Cclass="Device" Cgroup="Startup" Cvendor="Keil" Cversion="1.0.0" condition="STM32F1xx CMSIS"/>
         <package name="STM32F1xx_DFP" schemaVersion="1.4.0" url="http://www.keil.com/pack/" vendor="Keil" version="2.2.0"/>
