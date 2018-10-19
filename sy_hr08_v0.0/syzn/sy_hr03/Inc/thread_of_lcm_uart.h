@@ -4,9 +4,9 @@
 
 int init_thread_of_lcm_uart (void);
 
-#define GPIO_LTC_INT GPIO_PIN_12
-#define GPIO_ENCODE_PB GPIO_PIN_11
-#define GPIO_PANEL_BUTTONS GPIO_PIN_6
+#define GPIO_LTC_INT GPIO_PIN_12								//电源按键中断
+#define GPIO_ENCODE_PB GPIO_PIN_11							//旋钮按键中断
+#define GPIO_PANEL_BUTTONS GPIO_PIN_6						//面板按键 74LS148的触发中断
 
 struct user_common_t{
 	uint8_t pic_id;
@@ -23,11 +23,13 @@ struct lcm_parameter_t{
 	uint8_t hand_state;
 };
 
+//屏幕控制寄存器地址
 enum lcm_ctrl_register_list{
 	led_set = 0x01,	
 	pic_id = 0x03,
 };
 
+//屏幕数据寄存器地址
 enum lcm_data_register_list{
 	start_and_stop = 1,
 	motion_time,
@@ -59,6 +61,8 @@ enum lcm_data_register_list{
 	user_led_set,
 };
 
+
+//图片编号
 enum lcm_pic_id_t{
 	boot_animation_1 = 0,
 	boot_animation_2,
@@ -77,7 +81,8 @@ enum lcm_pic_id_t{
 	motion_ending,
 };
 
-
+//defualt valve for lcm data register
+//1 - 27 is in use
 #define LCM_DATA_REGISTER_DEFUALTS {0,1,0,0,0,0,0,10,0,4,2,0,1,1,1,1,1,0,1,1,0,1,1,0,0,0,0,0,10}
 
 #define REGISTER_ADDR  0
@@ -111,6 +116,7 @@ struct lcm_uart_len_t
 
 void finger_flexion_and_extension(void);
 void function_gloves_exercises(void);
+void functional_training(void);
 
 int lcd_read(struct lcm_parameter_t *p,uint32_t millisec);
 void setpic(uint16_t pic);

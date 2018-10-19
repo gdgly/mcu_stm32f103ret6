@@ -55,29 +55,29 @@ void thread_of_development (void const *argument) {
 		osDelay(2000);
 	
 	}
-	uint8_t datagram[128];
-	uint8_t buf[128];
-	size_t datagram_len;
-	size_t buf_size;
-	size_t skipped_count;
-	for(;;){
-		while (1) {
-				int ret = get_raw_datagram_from_serial(buf, sizeof buf, &buf_size, &skipped_count);
-				if (!ret) {
-					break;
-				}
-				uint32_t *d = (uint32_t *)datagram;
-				uint8_t *s = buf;
-				while (s < buf + buf_size && d < (uint32_t *)(datagram + sizeof datagram) ) {
-					if (sscanf((char *)s, "%08X", d) != 1) {
-						break;
-					}
-					d++;
-					s+= 9; // format likes '00000000 '
-				}
-				datagram_len = ((uint8_t *)d) - datagram;			
-		}	
-	}
+//	uint8_t datagram[128];
+//	uint8_t buf[128];
+//	size_t datagram_len;
+//	size_t buf_size;
+//	size_t skipped_count;
+//	for(;;){
+//		while (1) {
+//				int ret = get_raw_datagram_from_serial(buf, sizeof buf, &buf_size, &skipped_count);
+//				if (!ret) {
+//					break;
+//				}
+//				uint32_t *d = (uint32_t *)datagram;
+//				uint8_t *s = buf;
+//				while (s < buf + buf_size && d < (uint32_t *)(datagram + sizeof datagram) ) {
+//					if (sscanf((char *)s, "%08X", d) != 1) {
+//						break;
+//					}
+//					d++;
+//					s+= 9; // format likes '00000000 '
+//				}
+//				datagram_len = ((uint8_t *)d) - datagram;			
+//		}	
+//	}
 
 }
 
@@ -89,51 +89,51 @@ void set_valve(void)
 }
 
 
-int get_raw_datagram_from_serial(uint8_t *raw_datagram, size_t max_size, size_t *actual_size_ptr, size_t *skipped_byte_count_ptr)
-{
-	struct AsyncIoResult_t IoResult = { 0, osThreadGetId() };
-	int i;
-	
-	*skipped_byte_count_ptr = 0;
-	
-	for(i = 0;; i++) {
-		osStatus status = StartUartRx(UART_NO_TO_MAINBOARD, raw_datagram, max_size, SERIAL_DATAGRAM_END_CHR, NotifyAsyncIoFinished, &IoResult);
-		size_t len;
-		uint8_t *start_pos;
-		size_t offset;
-		
-		if (status != osOK) {
-			continue;
-		}
-		osSignalWait(SIG_SERVER_FINISHED, osWaitForever);
-		// TODO: Wait time should not be 'forever'. if it's out of time, should Call StopUartXX.
-		len = IoResult.IoResult;
-		if (len < 2) {
-			*skipped_byte_count_ptr += len;
-			continue;
-		}
-		if (raw_datagram[len - 1] != SERIAL_DATAGRAM_END_CHR) {
-			*skipped_byte_count_ptr += len;
-			continue;
-		}
+//int get_raw_datagram_from_serial(uint8_t *raw_datagram, size_t max_size, size_t *actual_size_ptr, size_t *skipped_byte_count_ptr)
+//{
+//	struct AsyncIoResult_t IoResult = { 0, osThreadGetId() };
+//	int i;
+//	
+//	*skipped_byte_count_ptr = 0;
+//	
+//	for(i = 0;; i++) {
+//		osStatus status = StartUartRx(UART_NO_TO_MAINBOARD, raw_datagram, max_size, SERIAL_DATAGRAM_END_CHR, NotifyAsyncIoFinished, &IoResult);
+//		size_t len;
+//		uint8_t *start_pos;
+//		size_t offset;
+//		
+//		if (status != osOK) {
+//			continue;
+//		}
+//		osSignalWait(SIG_SERVER_FINISHED, osWaitForever);
+//		// TODO: Wait time should not be 'forever'. if it's out of time, should Call StopUartXX.
+//		len = IoResult.IoResult;
+//		if (len < 2) {
+//			*skipped_byte_count_ptr += len;
+//			continue;
+//		}
+//		if (raw_datagram[len - 1] != SERIAL_DATAGRAM_END_CHR) {
+//			*skipped_byte_count_ptr += len;
+//			continue;
+//		}
 
-		start_pos = memchr(raw_datagram, SERIAL_DATAGRAM_START_CHR, len - 1);
-		if (start_pos == NULL) {
-			*skipped_byte_count_ptr += len;
-			continue;
-		}
-		
-		// we found it.
-		offset = start_pos - raw_datagram;
-		*skipped_byte_count_ptr += offset;
-		*actual_size_ptr = len - 2 - offset;
-		memcpy(raw_datagram, start_pos + 1, *actual_size_ptr);
-		raw_datagram[*actual_size_ptr] = 0;
-		if (i) {
-			// easy to set a breakpoint when debugging.
-			i = 0;
-		}
-		return 1;
-	}
-}
+//		start_pos = memchr(raw_datagram, SERIAL_DATAGRAM_START_CHR, len - 1);
+//		if (start_pos == NULL) {
+//			*skipped_byte_count_ptr += len;
+//			continue;
+//		}
+//		
+//		// we found it.
+//		offset = start_pos - raw_datagram;
+//		*skipped_byte_count_ptr += offset;
+//		*actual_size_ptr = len - 2 - offset;
+//		memcpy(raw_datagram, start_pos + 1, *actual_size_ptr);
+//		raw_datagram[*actual_size_ptr] = 0;
+//		if (i) {
+//			// easy to set a breakpoint when debugging.
+//			i = 0;
+//		}
+//		return 1;
+//	}
+//}
 

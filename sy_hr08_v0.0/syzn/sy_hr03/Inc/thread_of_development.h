@@ -3,9 +3,9 @@
 int init_thread_of_development(void);
 void set_valve(void);
 
-// datagram description
-#define SERIAL_DATAGRAM_START_CHR '\n'
-#define SERIAL_DATAGRAM_END_CHR   '\r'
+//// datagram description
+//#define SERIAL_DATAGRAM_START_CHR '\n'
+//#define SERIAL_DATAGRAM_END_CHR   '\r'
 
 #define UART_NO_TO_MAINBOARD 2
 
