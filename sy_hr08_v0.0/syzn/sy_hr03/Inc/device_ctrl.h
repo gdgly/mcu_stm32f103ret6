@@ -2,6 +2,16 @@
 #define __DEVICE_CTRL_H
 #include "stm32f1xx_hal.h"
 
+
+// datagram description
+#define SERIAL_DATAGRAM_START_CHR '\r'
+#define SERIAL_DATAGRAM_END_CHR   '\n'
+
+#define MAX_SIZE_OF_SERIAL_DATAGRAM_EVENT 128
+
+#define DEVICE_DIWEN 1
+#define DEVICE_ANDROID 2
+
 extern TIM_HandleTypeDef htim3;
 
 #define SET_MOTOR1_PWM(pmw)      __HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_2,pmw);   
@@ -71,6 +81,9 @@ void sy08_pump_set(uint8_t cycle);
 void sy08_pump_reset(void);
 //void sy08_set_valve(const uint8_t valve1, const uint8_t valve2, const uint8_t valve3, const uint8_t valve4, const uint8_t valve5);
 void sy08_set_valve(const uint8_t valve);
+
+int get_msg_from_serial(uint8_t No, uint8_t *raw_datagram, size_t max_size, size_t *actual_size_ptr, size_t *skipped_byte_count_ptr);
+int send_raw_datagram_to_serial(uint8_t No, const void *raw_datagram, size_t raw_datagram_len);
 
 #define VALVE_RESET 0
 #define VALVE_SET 1

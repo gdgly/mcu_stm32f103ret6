@@ -6,6 +6,8 @@
 int init_thread_of_sensor_glove_rx (void);
 int init_thread_of_sensor_glove_tx (void);
 
+#define GLOVES_UART_NO 4
+
 struct sensor_glove_para_t{
 	uint8_t degree[5];
 	uint16_t calibration_resualt;
@@ -13,11 +15,6 @@ struct sensor_glove_para_t{
 	uint32_t machinary_id;
 };
 
-
-
-// datagram description
-#define SERIAL_DATAGRAM_START_CHR '\r'
-#define SERIAL_DATAGRAM_END_CHR   '\n'
 
 enum evt_id_t{
 	data_host_uart_tx = 5,
@@ -64,7 +61,7 @@ struct machinary_id_t{
 	uint32_t machinary_id_t;
 };
 
-struct serial_calibration_cmd_t{
+struct calibration_cmd_t{
 	struct uart_head_t head;
 	uint16_t cmd;
 };
@@ -94,9 +91,7 @@ void *SerialDatagramEvtAlloc(size_t size);
 int SerialDatagramEvtSend(void *ptr);
 void SerialDatagramEvtFree(void *ptr);
 int sensor_glove_datagram_send(void *msg, const size_t msg_len);
-int send_raw_datagram_to_serial(const void *raw_datagram, size_t raw_datagram_len);
 
-int get_sensor_glove_msg_from_serial(uint8_t *raw_datagram, size_t max_size, size_t *actual_size_ptr, size_t *skipped_byte_count_ptr);
 static int sensor_glove_msg_process_common_func(const void *msg, size_t msg_len, const void *ptr);
 void update_sensor_glove_para(const void *msg, size_t msg_len);
 

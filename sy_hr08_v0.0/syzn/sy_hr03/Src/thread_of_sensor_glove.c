@@ -1,16 +1,15 @@
-
-#include "cmsis_os.h"                                           // CMSIS RTOS header file
 #include "cmsis_os.h"     // CMSIS RTOS header file
 #include <stdlib.h>
 #include <string.h>
 #include "thread_of_sensor_glove.h"
+#include "thread_of_android_uart.h"
 #include "uart-API.h"
 #include "uart-line-IO.h"
+#include "device_ctrl.h"
 /*----------------------------------------------------------------------------
  *      Thread 1 'Thread_Name': Sample thread
  *---------------------------------------------------------------------------*/
  
-#define MAX_SIZE_OF_SERIAL_DATAGRAM_EVENT 128
 osMailQDef(sensor_glove_tx, 30, uint8_t[MAX_SIZE_OF_SERIAL_DATAGRAM_EVENT]); 
 static osMailQId mail_queue_id_for_glove_tx; 
  
@@ -26,6 +25,10 @@ extern osMutexId glove_sensor_mutex_id;
 
 struct sensor_glove_para_t sensor_glove_para;
 static void calculation_glove_degree(const uint16_t *adc);
+
+uint32_t gloves_access_mark;
+extern uint8_t lcm_type;
+extern struct android_share_t android_share;
 
 
 int init_thread_of_sensor_glove_rx (void) {
@@ -55,10 +58,12 @@ void thread_of_sensor_glove_rx (void const *argument) {
 		size_t buf_size;
 		size_t skipped_count;                                         // suspend thread
 		while (1) {
-			int ret = get_sensor_glove_msg_from_serial(buf, sizeof buf, &buf_size, &skipped_count);
+			int ret = get_msg_from_serial(GLOVES_UART_NO, buf, sizeof buf, &buf_size, &skipped_count);
 			if (!ret) {
 				break;
 			}
+			gloves_access_mark = HAL_GetTick();
+			
 			uint16_t *d = (uint16_t *)datagram;
 			uint8_t *s = buf;
 			
@@ -161,71 +166,11 @@ int sensor_glove_datagram_send(void *msg, const size_t msg_len)
 	p--;
 	*p++ = SERIAL_DATAGRAM_END_CHR;	
 	
-	ret = send_raw_datagram_to_serial(buf, p - buf);
+	ret = send_raw_datagram_to_serial(GLOVES_UART_NO, buf, p - buf);
 	return ret;
 }
 
 
-int send_raw_datagram_to_serial(const void *raw_datagram, size_t raw_datagram_len)
-{
-	struct AsyncIoResult_t IoResult = { 0, osThreadGetId() };
-	osStatus status = StartUartTx(4, raw_datagram, raw_datagram_len, NotifyAsyncIoFinished, &IoResult);
-	if (status != osOK) {
-		return 0;
-	}
-	osSignalWait(SIG_SERVER_FINISHED, osWaitForever);
-	// TODO: Wait time should not be 'forever'. if it's out of time, should Call StopUartXX.
-	return 1;
-}
-
-
-int get_sensor_glove_msg_from_serial(uint8_t *raw_datagram, size_t max_size, size_t *actual_size_ptr, size_t *skipped_byte_count_ptr)
-{
-	struct AsyncIoResult_t IoResult = { 0, osThreadGetId() };
-	int i;
-	
-	*skipped_byte_count_ptr = 0;
-	
-	for(i = 0;; i++) {
-		osStatus status = StartUartRx(4, raw_datagram, max_size, SERIAL_DATAGRAM_END_CHR, NotifyAsyncIoFinished, &IoResult);
-		size_t len;
-		uint8_t *start_pos;
-		size_t offset;
-		
-		if (status != osOK) {
-			continue;
-		}
-		osSignalWait(SIG_SERVER_FINISHED, osWaitForever);
-		// TODO: Wait time should not be 'forever'. if it's out of time, should Call StopUartXX.
-		len = IoResult.IoResult;
-		if (len < 2) {
-			*skipped_byte_count_ptr += len;
-			continue;
-		}
-		if (raw_datagram[len - 1] != SERIAL_DATAGRAM_END_CHR) {
-			*skipped_byte_count_ptr += len;
-			continue;
-		}
-
-		start_pos = memchr(raw_datagram, SERIAL_DATAGRAM_START_CHR, len - 1);
-		if (start_pos == NULL) {
-			*skipped_byte_count_ptr += len;
-			continue;
-		}
-		
-		// we found it.
-		offset = start_pos - raw_datagram;
-		*skipped_byte_count_ptr += offset;
-		*actual_size_ptr = len - 2 - offset;
-		memcpy(raw_datagram, start_pos + 1, *actual_size_ptr);
-		raw_datagram[*actual_size_ptr] = 0;
-		if (i) {
-			// easy to set a breakpoint when debugging.
-			i = 0;
-		}
-		return 1;
-	}
-}
 
 uint16_t sensor_adc_standard[5];
 uint16_t sensor_adc_width[5];
@@ -242,6 +187,20 @@ void update_sensor_glove_para(const void *msg, size_t msg_len)
 		const struct calibration_resualt_t *calibration_resualt = msg;			
 		sensor_glove_para.calibration_resualt = calibration_resualt->resualt;
 		osMutexRelease(glove_sensor_mutex_id);
+		
+		struct mcu_proof_t *glove_proof_evt = AndroidDatagramEvtAlloc(sizeof (*glove_proof_evt));
+		if(glove_proof_evt){
+			ANDROID_DATAGRAM_INIT((*glove_proof_evt), mcu_proof);
+			if(calibration_resualt->resualt == 1){
+				glove_proof_evt->proof = 2;
+			}else if(calibration_resualt->resualt == 2){
+				glove_proof_evt->proof = 1;
+			}else if(calibration_resualt->resualt == 0){
+				glove_proof_evt->proof = 2;
+			}
+			AndroidDatagramEvtSend(glove_proof_evt);
+		}
+		
 	}else if(head->type == calibration_data){
 		const struct calibration_data_t *calibration_data = msg;
 		for(i=0;i<5;i++){
@@ -253,19 +212,46 @@ void update_sensor_glove_para(const void *msg, size_t msg_len)
 		const struct software_version_t *version = msg;
 		sensor_glove_para.machinary_id = version->machinary_id;
 		sensor_glove_para.version = version->version;
-		osMutexRelease(glove_sensor_mutex_id);	
+		osMutexRelease(glove_sensor_mutex_id);
+		struct mcu_hand_type_t *mcu_hand_evt = AndroidDatagramEvtAlloc(sizeof (*mcu_hand_evt));
+		if(mcu_hand_evt){
+			ANDROID_DATAGRAM_INIT((*mcu_hand_evt), mcu_hand_type);
+			mcu_hand_evt->left_type = 0x03;
+			mcu_hand_evt->right_type = 0x00;
+			AndroidDatagramEvtSend(mcu_hand_evt);
+		}
 	}
 }
 
-
+uint8_t degree_cnt = 0;
 static void calculation_glove_degree(const uint16_t *adc)
 {
 	int i;
 	osMutexWait(glove_sensor_mutex_id,osWaitForever);
   for(i=0;i<5;i++){
-		sensor_glove_para.degree[i] = (uint16_t)((*adc - sensor_adc_standard[i])/sensor_adc_width[i]);	
+		sensor_glove_para.degree[i] = (uint16_t)(((*(adc + i) - sensor_adc_standard[i])*180)/sensor_adc_width[i]);	
 	}
-	osMutexRelease(glove_sensor_mutex_id);		
+	osMutexRelease(glove_sensor_mutex_id);
+	if(lcm_type == DEVICE_ANDROID){
+		if(android_share.scene == 2){
+			if(degree_cnt == 2){
+				struct mcu_noti_hand_angle_t *mcu_noti_hand_angle_evt = AndroidDatagramEvtAlloc(sizeof (*mcu_noti_hand_angle_evt));
+				if(mcu_noti_hand_angle_evt){
+					ANDROID_DATAGRAM_INIT((*mcu_noti_hand_angle_evt), mcu_noti_hand_angle);
+					mcu_noti_hand_angle_evt->angle[0] =180 - sensor_glove_para.degree[0];
+					mcu_noti_hand_angle_evt->angle[1] =180 - sensor_glove_para.degree[1];
+					mcu_noti_hand_angle_evt->angle[2] =180 - sensor_glove_para.degree[2];
+					mcu_noti_hand_angle_evt->angle[3] =180 - sensor_glove_para.degree[3];
+					mcu_noti_hand_angle_evt->angle[4] =180 - sensor_glove_para.degree[4];
+					AndroidDatagramEvtSend(mcu_noti_hand_angle_evt);		
+				}			
+			}else if(degree_cnt == 3){
+				degree_cnt = 0;
+			}else{
+				degree_cnt++;
+			}
+		}
+	}	
 }
 
 

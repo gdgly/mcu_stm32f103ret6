@@ -40,13 +40,13 @@ enum lcm_data_register_list{
 	length_of_training,
 	training_mode,
 	training_interval,
-	training_strength,
+	training_strength,														//0x0a
 	training_hand,
 	flexion_and_extension_thumb,
 	flexion_and_extension_index_finger,
 	flexion_and_extension_middle_finger,
 	flexion_and_extension_ring_finger,
-	flexion_and_extension_little_thumb,
+	flexion_and_extension_little_thumb,						//0x10
 	flexion_and_extension_all,
 	gloves_exercises_index_finger,
 	gloves_exercises_middle_finger,
@@ -56,9 +56,11 @@ enum lcm_data_register_list{
 	functional_training_catching_ball,
 	functional_training_two_fingers,
 	functional_training_three_fingers,
-	audio_switch,
+	gloves_calibration_icon,											//0x1a
+	gloves_calibration_button,
+	audio_switch,																		
 	volume_set,
-	user_led_set,
+	user_led_set,																	//0x1f					
 };
 
 
@@ -74,11 +76,12 @@ enum lcm_pic_id_t{
 	functional_training_interface,
 	settings_interface,
 	calibration_interface,
-	gloves_is_connected,
+	gloves_is_connected,													//0x0a
 	gloves_not_connected,
+	gloves_calibrantion_running,
 	calibration_successed,
 	calibration_failed,
-	motion_ending,
+	motion_ending,																//0x0f
 };
 
 //defualt valve for lcm data register
@@ -117,7 +120,10 @@ struct lcm_uart_len_t
 void finger_flexion_and_extension(void);
 void function_gloves_exercises(void);
 void functional_training(void);
+void contralateral_training(void);
+void gloves_calibrantion_process(void);
 
+int check_device_lcm_android(void);
 int lcd_read(struct lcm_parameter_t *p,uint32_t millisec);
 void setpic(uint16_t pic);
 void write_ctrl_register(const uint8_t list, uint8_t *p, uint16_t *value, struct lcm_uart_len_t *t);

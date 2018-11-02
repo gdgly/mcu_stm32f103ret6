@@ -4,7 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "device_ctrl.h"
-
+#include "uart-API.h"
+#include "uart-line-IO.h"
 
 
 
@@ -13,6 +14,8 @@ void sy08_pump_set(uint8_t cycle)
 	uint16_t pmw = 4096 - cycle*0.01*4096;
 	SET_MOTOR1_PWM(pmw);
 	SET_MOTOR2_PWM(pmw);
+	MOTOR2_RESET();
+	MOTOR1_RESET();
 	MOTOR1_SET();
 	MOTOR2_SET();
 }
@@ -38,4 +41,64 @@ void sy08_set_valve(const uint8_t valve)
 	((valve&0x10)>>4)?VALVE_CN1_SET():VALVE_CN1_RESET();	
 }
 
+int get_msg_from_serial(uint8_t No, uint8_t *raw_datagram, size_t max_size, size_t *actual_size_ptr, size_t *skipped_byte_count_ptr)
+{
+	struct AsyncIoResult_t IoResult = { 0, osThreadGetId() };
+	int i;
+	
+	*skipped_byte_count_ptr = 0;
+	
+	for(i = 0;; i++) {
+		osStatus status = StartUartRx(No, raw_datagram, max_size, SERIAL_DATAGRAM_END_CHR, NotifyAsyncIoFinished, &IoResult);
+		size_t len;
+		uint8_t *start_pos;
+		size_t offset;
+		
+		if (status != osOK) {
+			continue;
+		}
+		osSignalWait(SIG_SERVER_FINISHED, osWaitForever);
+		// TODO: Wait time should not be 'forever'. if it's out of time, should Call StopUartXX.
+		len = IoResult.IoResult;
+		if (len < 2) {
+			*skipped_byte_count_ptr += len;
+			continue;
+		}
+		if (raw_datagram[len - 1] != SERIAL_DATAGRAM_END_CHR) {
+			*skipped_byte_count_ptr += len;
+			continue;
+		}
+
+		start_pos = memchr(raw_datagram, SERIAL_DATAGRAM_START_CHR, len - 1);
+		if (start_pos == NULL) {
+			*skipped_byte_count_ptr += len;
+			continue;
+		}
+		
+		// we found it.
+		offset = start_pos - raw_datagram;
+		*skipped_byte_count_ptr += offset;
+		*actual_size_ptr = len - 2 - offset;
+		memcpy(raw_datagram, start_pos + 1, *actual_size_ptr);
+		raw_datagram[*actual_size_ptr] = 0;
+		if (i) {
+			// easy to set a breakpoint when debugging.
+			i = 0;
+		}
+		return 1;
+	}
+}
+
+
+int send_raw_datagram_to_serial(uint8_t No, const void *raw_datagram, size_t raw_datagram_len)
+{
+	struct AsyncIoResult_t IoResult = { 0, osThreadGetId() };
+	osStatus status = StartUartTx(No, raw_datagram, raw_datagram_len, NotifyAsyncIoFinished, &IoResult);
+	if (status != osOK) {
+		return 0;
+	}
+	osSignalWait(SIG_SERVER_FINISHED, osWaitForever);
+	// TODO: Wait time should not be 'forever'. if it's out of time, should Call StopUartXX.
+	return 1;
+}
 

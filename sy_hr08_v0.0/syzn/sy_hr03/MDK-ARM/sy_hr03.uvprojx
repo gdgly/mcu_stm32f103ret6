@@ -51,7 +51,7 @@
           <OutputName>sy_hr03</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
-          <CreateHexFile>0</CreateHexFile>
+          <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
           <ListingPath></ListingPath>
@@ -334,7 +334,7 @@
               <MiscControls>--C99</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xE</Define>
               <Undefine></Undefine>
-              <IncludePath>../Drivers/STM32F1xx_HAL_Driver/Inc;                   ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;                   ../Drivers/CMSIS/Include;                   ../Drivers/CMSIS/Device/ST/STM32F1xx/Include;                   ../../common/Inc;                   ../Inc</IncludePath>
+              <IncludePath>../Drivers/STM32F1xx_HAL_Driver/Inc;                     ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;                     ../Drivers/CMSIS/Include;                     ../Drivers/CMSIS/Device/ST/STM32F1xx/Include;                     ../../common/Inc;                     ../Inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -527,6 +527,11 @@
               <FileName>thread_of_sensor_glove.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Src\thread_of_sensor_glove.c</FilePath>
+            </File>
+            <File>
+              <FileName>thread_of_android_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\thread_of_android_uart.c</FilePath>
             </File>
           </Files>
         </Group>

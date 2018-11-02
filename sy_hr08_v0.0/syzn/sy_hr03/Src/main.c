@@ -41,6 +41,7 @@
 #include "thread_of_development.h"
 #include "thread_of_LCM_uart.h"
 #include "thread_of_sensor_glove.h"
+#include "thread_of_android_uart.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -71,7 +72,7 @@ static void MX_TIM3_Init(void);
 static void MX_ADC1_Init(void);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-
+                
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -96,6 +97,8 @@ int main(void)
 	init_thread_of_lcm_uart();
 	init_thread_of_sensor_glove_rx();
 	init_thread_of_sensor_glove_tx();
+	init_tid_thread_of_android_rx();
+	init_tid_thread_of_android_tx();
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -183,7 +186,7 @@ void MX_ADC1_Init(void)
 
   ADC_ChannelConfTypeDef sConfig;
 
-    /**Common config
+    /**Common config 
     */
   hadc1.Instance = ADC1;
   hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
@@ -194,7 +197,7 @@ void MX_ADC1_Init(void)
   hadc1.Init.NbrOfConversion = 1;
   HAL_ADC_Init(&hadc1);
 
-    /**Configure Regular Channel
+    /**Configure Regular Channel 
     */
   sConfig.Channel = ADC_CHANNEL_14;
   sConfig.Rank = 1;
@@ -317,9 +320,9 @@ void MX_USART3_UART_Init(void)
 
 }
 
-/** Configure pins as
-        * Analog
-        * Input
+/** Configure pins as 
+        * Analog 
+        * Input 
         * Output
         * EVENT_OUT
         * EXTI
@@ -339,8 +342,8 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5
-                          |GPIO_PIN_6|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10
+  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5 
+                          |GPIO_PIN_6|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10 
                           |GPIO_PIN_11|GPIO_PIN_14, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -364,9 +367,9 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PE4 PE5 PE6 PE10
+  /*Configure GPIO pins : PE4 PE5 PE6 PE10 
                            PE11 PE14 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_10
+  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_10 
                           |GPIO_PIN_11|GPIO_PIN_14;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -479,10 +482,10 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
   * @}
-  */
+  */ 
 
 /**
   * @}
-*/
+*/ 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

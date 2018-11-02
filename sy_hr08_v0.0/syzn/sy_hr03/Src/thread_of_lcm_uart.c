@@ -6,6 +6,7 @@
 #include "uart-line-IO.h"
 #include "thread_of_LCM_uart.h"
 #include "thread_of_sensor_glove.h"
+#include "thread_of_android_uart.h"
 #include "device_ctrl.h"
 /*----------------------------------------------------------------------------
  *      Thread 1 'Thread_Name': Sample thread
@@ -24,6 +25,12 @@ uint8_t pic_old;
 struct lcm_parameter_t user_parameter;
 struct lcm_uart_len_t lcm_uart_len = {0 , 0};
 
+extern struct sensor_glove_para_t sensor_glove_para;
+extern uint32_t gloves_access_mark;
+
+extern osThreadId tid_thread_of_android_rx; 
+extern osThreadId tid_thread_of_android_tx; 
+
 osMutexDef(glove_sensor_mutex);
 osMutexId glove_sensor_mutex_id;
 
@@ -36,6 +43,7 @@ uint8_t *lcm_uart_send_pointer = lcm_uart_send_buff;
 uint8_t lcm_ctrl_register[][2] = {
   {0x01, 0x01},
   {0x03, 0x02},
+	{0x20, 0x01},
 };
 
 uint16_t lcm_data_register[] = {
@@ -51,13 +59,55 @@ int init_thread_of_lcm_uart (void) {
 }
 
 uint32_t pic_switch_mark = 0;
-
+uint8_t pic_mark,lcm_type;
 void thread_of_lcm_uart (void const *argument) {
 	user_signal_info_t user_timer_info = { osThreadGetId(), SIG_USER_TIMER };
 	osTimerDef(main_timer, SetUserSignal);
 	osTimerId main_timer_id = osTimerCreate(osTimer(main_timer), osTimerPeriodic, &user_timer_info);
 	osTimerStart(main_timer_id, EVENT_LOOP_TIME_IN_MILLI_SECOND);
-  while (1) {
+  while(1){
+		
+		int check_lcm_android_try = 50;
+		while(check_lcm_android_try--){
+			osSignalWait(SIG_USER_TIMER, osWaitForever);
+			int resualt = check_device_lcm_android();
+			if(resualt == 1){
+				break;
+			}				
+		}
+		
+		//设备为安卓板
+		if(check_lcm_android_try < 0){
+			osSignalSet(tid_thread_of_android_tx, SIG_USER_2);
+			osSignalSet(tid_thread_of_android_rx, SIG_USER_2);
+			lcm_type = DEVICE_ANDROID;
+			//手套断开监测程序，如果断开则通知安卓上位机一次
+			uint8_t is_notice_android = 0;
+			while(1){
+				osSignalWait(SIG_USER_TIMER, osWaitForever);
+				if((HAL_GetTick() - gloves_access_mark > 0.2*DELAY_1S)&&(is_notice_android == 0)){
+					struct mcu_hand_type_t *p = AndroidDatagramEvtAlloc(sizeof (*p));
+					if(p){
+						ANDROID_DATAGRAM_INIT((*p), mcu_hand_type);
+						if(HAL_GetTick()	- gloves_access_mark > 200){
+							p->left_type = 0;
+							p->right_type = 0;
+						}else{
+							p->left_type = 0x03;
+							p->right_type = 0x00;
+						}
+						AndroidDatagramEvtSend(p);			
+						is_notice_android = 1;
+					}					
+				}else if(HAL_GetTick() - gloves_access_mark < 0.2*DELAY_1S){
+					is_notice_android = 0;				
+				}
+			}
+		}
+		
+		//设备为迪文屏
+		lcm_type = DEVICE_DIWEN;
+		
 		for(;;){
 			osSignalWait(SIG_USER_TIMER, osWaitForever);
 			lcm_uart_len.rx_len = 0;
@@ -68,7 +118,7 @@ void thread_of_lcm_uart (void const *argument) {
 			switch(ctrl_register_list[pic_id]){
 			case boot_animation_1:
 				setpic(boot_animation_2);
-			break;
+			break; 
 
 			case boot_animation_2:
 				osDelay(500);		
@@ -102,7 +152,7 @@ void thread_of_lcm_uart (void const *argument) {
 			break;
 			
 			case contralateral_training_interface:
-				
+				contralateral_training();
 			break;
 			
 			case functional_training_interface:
@@ -117,6 +167,70 @@ void thread_of_lcm_uart (void const *argument) {
 						data_register_list[flexion_and_extension_thumb + i] = 1;
 					}
 					write_data_registers(flexion_and_extension_thumb, lcm_uart_send_pointer, 5, &data_register_list[flexion_and_extension_thumb], &lcm_uart_len);
+				}
+			break;
+			
+			case calibration_interface:
+				if(pic_old != calibration_interface){
+					data_register_list[gloves_calibration_button] = 0;
+					write_data_registers(gloves_calibration_button, lcm_uart_send_pointer, 1, &data_register_list[gloves_calibration_button], &lcm_uart_len);				
+				}else{
+					read_data_registers(gloves_calibration_button, lcm_uart_send_pointer, 1, &lcm_uart_len);
+					if(data_register_list[gloves_calibration_button] == 1){
+						if(HAL_GetTick() - gloves_access_mark > 0.2*DELAY_1S){
+							setpic(gloves_not_connected);
+						}else{
+							setpic(gloves_calibrantion_running);
+						}
+					}
+				}
+			break;
+				
+			case gloves_is_connected:
+				if(pic_old != gloves_is_connected){
+					pic_switch_mark = HAL_GetTick();
+				}else{
+					if((HAL_GetTick() - pic_switch_mark) > 0.2*DELAY_1S){
+						setpic(pic_mark);
+					}
+				}
+			break;
+			
+			case gloves_not_connected:
+				if(pic_old != gloves_not_connected){
+					pic_mark = pic_old;
+					pic_switch_mark = HAL_GetTick();
+					sy08_set_valve(0);
+					sy08_pump_reset();
+					data_register_list[start_and_stop] = 0;
+					write_data_registers(start_and_stop, lcm_uart_send_pointer, 1, &data_register_list[start_and_stop], &lcm_uart_len);
+				}
+				if(HAL_GetTick() - gloves_access_mark < 0.2*DELAY_1S){
+					setpic(gloves_is_connected);
+				}
+			break;
+				
+			case gloves_calibrantion_running:
+				gloves_calibrantion_process();
+			break;
+			
+			case calibration_successed:
+				if(pic_old != calibration_successed){
+					pic_switch_mark = HAL_GetTick();
+				}else{
+					if((HAL_GetTick() - pic_switch_mark) > 2*DELAY_1S){
+						setpic(calibration_interface);
+					}
+				}
+			break;
+			
+			case calibration_failed:
+				if(pic_old != calibration_failed){
+					pic_switch_mark = HAL_GetTick();
+				}else{
+					if((HAL_GetTick() - pic_switch_mark) > 2*DELAY_1S){
+						setpic(calibration_interface);
+					}
 				}
 			break;
 			
@@ -137,7 +251,7 @@ void thread_of_lcm_uart (void const *argument) {
 				
 			}
 			pic_old = ctrl_register_list[pic_id];
-			lcd_read(&user_parameter,80);
+			lcd_read(&user_parameter,80);			
 		}
   }
 }
@@ -294,9 +408,74 @@ void function_gloves_exercises(void)
 }
 
 
+//对侧训练
+void contralateral_training(void)
+{
+	uint8_t valve;
+	uint8_t degree[5];
+	int i;
+	
+	if(pic_old != ctrl_register_list[pic_id]){
+		if(pic_old == settings_interface){
+			motion_start_mark = HAL_GetTick();
+			training_time_mark = 0;		
+		}
+	}else{
+		if(data_register_list[start_and_stop]){
+			if(HAL_GetTick() - gloves_access_mark > 0.2*DELAY_1S){
+				setpic(gloves_not_connected);
+				return;
+			}
+			training_time_mark = HAL_GetTick() - motion_start_mark;
+			data_register_list[motion_time] = training_time_mark/(60*DELAY_1S);
+			if(data_register_list[motion_time] > data_register_list[length_of_training]){
+				setpic(motion_ending);
+				return ;
+			}
+			write_data_registers(motion_time, lcm_uart_send_pointer, 1, &data_register_list[motion_time], &lcm_uart_len);
+			
+			sy08_pump_set(60 + 10*data_register_list[training_strength]);
+			
+			osMutexWait(glove_sensor_mutex_id,osWaitForever);
+			memcpy(degree,sensor_glove_para.degree,sizeof(degree));
+			osMutexRelease(glove_sensor_mutex_id);	
+			
+			valve = 0x00;
+			
+			if(degree[0] < 60){
+				valve = (VALVE_SET)|valve;
+			}else if(degree[0] < 120){
+				
+			}else if(degree[0] < 180){
+				valve = (VALVE_RESET)|valve;
+			}else{
+				valve = (VALVE_RESET)|valve;
+			}	
+			
+			for(i=1;i<5;i++){
+				if(degree[i] < 30){
+					valve = (VALVE_SET<<i)|valve;
+				}else if(degree[i] < 120){
+					
+				}else if(degree[i] < 180){
+					valve = (VALVE_RESET<<i)|valve;
+				}else{
+					valve = (VALVE_RESET<<i)|valve;
+				}	
+			}
+			sy08_set_valve(valve);			
+		}else{
+			motion_start_mark = HAL_GetTick() - training_time_mark;
+			sy08_pump_reset();
+		}
+		read_data_registers(start_and_stop, lcm_uart_send_pointer, 1, &lcm_uart_len);
+	}
+
+}
+
 //功能训练
 uint8_t functional_training_list[3];
-const uint8_t functional_training_func[][5] = {{0x01,0x01,0x01,0x01,0x01},{0x00,0x00,0x00,0x01,0x01},{0x00,0x00,0x01,0x01,0x01}};
+const uint8_t functional_training_func[][5] = {{0x01,0x01,0x01,0x01,0x01},{0x00,0x00,0x00,0x01,0x01},{0x00,0x00,0x01,0x01,0x01}}; //必须加const 才能保证数组能用
 uint8_t functional_training_list_cnt;
 void functional_training(void)
 {
@@ -394,6 +573,53 @@ void functional_training(void)
 	}
 }
 
+
+//数据手套校准
+void gloves_calibrantion_process(void)
+{
+	if(pic_old != ctrl_register_list[pic_id]){
+		motion_start_mark = HAL_GetTick();
+		struct calibration_cmd_t *p = SerialDatagramEvtAlloc(sizeof (*p));
+		if(p){
+			SERIAL_DATAGRAM_INIT((*p), calibration_cmd);
+			p->cmd = 1;
+			SerialDatagramEvtSend(p);
+		}
+	}else{
+		uint8_t icon = ((HAL_GetTick() - motion_start_mark)/1500);
+		if(icon < 8){
+			return;
+		}else if(icon == 8){
+			struct calibration_cmd_t *p = SerialDatagramEvtAlloc(sizeof (*p));
+			if(p){
+				SERIAL_DATAGRAM_INIT((*p), calibration_cmd);
+				p->cmd = 2;
+				SerialDatagramEvtSend(p);
+			}		
+		}else{			
+			uint8_t resualt = 0;
+			osMutexWait(glove_sensor_mutex_id,osWaitForever);
+			resualt = sensor_glove_para.calibration_resualt;
+			osMutexRelease(glove_sensor_mutex_id);
+			
+			if(resualt == 1){
+				setpic(calibration_failed);	
+			}else if(resualt == 2){
+				setpic(calibration_successed);
+			}
+			return;
+		}
+		
+		if(icon > 3){
+			icon = icon - 4;
+		}
+		
+		data_register_list[gloves_calibration_icon] = icon;
+		write_data_registers(gloves_calibration_icon, lcm_uart_send_pointer, 1, &data_register_list[gloves_calibration_icon], &lcm_uart_len);
+	}
+}
+
+
 //lcd read is for communication with diwen
 //通讯周期为100ms，在此100ms内，read_ctrl_register, write_ctrl_register, write_data_registers, read_data_registers
 //会将需要串口发送的内容存入lcm_uart_send_buff，需要发送和接收的数据长度存入lcm_uart_len
@@ -454,6 +680,30 @@ void setpic(uint16_t pic)
 	write_ctrl_register(1, datagram, &pic, &t);
 	SendDataToUart(3,datagram,t.tx_len,80);
 }
+
+//检查设备，确定是串口屏/安卓板的哪一个
+int check_device_lcm_android(void)
+{
+	uint8_t buff[16],data[16];
+	buff[0] = FRAME_HEAD_H;
+	buff[1] = FRAME_HEAD_L;
+	buff[2] = 0x03;
+	buff[3] = RD_CTL_REG;
+	buff[4] = 0x00;
+	buff[5] = 0x01;
+	memset(data, 0 , sizeof(data));
+	int ret = SendReqAndRecvResDataWithUart(3, buff, 6, data, 7, 100);
+	if(ret){
+		uint16_t version = (data[5]<<8)|(data[6]);
+		if(!version){
+			return -1;
+		}
+		return 1;
+	}
+	return -1;
+}
+
+
 
 //写控制寄存器
 //uint8_t list      : 寄存器地址

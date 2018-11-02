@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "thread_of_development.h"
+#include "thread_of_android_uart.h"
 #include "uart-API.h"
 #include "uart-line-IO.h"
 #include "IOI2C.h"
@@ -41,17 +42,59 @@ void thread_of_development (void const *argument) {
 	MCP4728WriteVref(2, &dac1, 1);
 	MCP4728WriteVref(3, &dac2, 0);
 	osDelay(100);
+//	struct mcu_scene_t *mcu_scene_evt = AndroidDatagramEvtAlloc(sizeof (*mcu_scene_evt));
+//	if(mcu_scene_evt){
+//		ANDROID_DATAGRAM_INIT((*mcu_scene_evt), mcu_scene);				
+//		mcu_scene_evt->scene = 0x01;
+//		AndroidDatagramEvtSend(mcu_scene_evt);			
+//	}	
+//  uint8_t cnt;
 	while(1){
-		dac1.dac[0] = 0.4*MCP4728_VREF;
-		dac1.dac[1] = 0.5*MCP4728_VREF;
-		dac1.dac[2] = 0.6*MCP4728_VREF;
-		MCP4728FastWrite(2, &dac1);
-		dac2.dac[0] = 0.99*MCP4728_VREF;
-		dac2.dac[1] = 0.1*MCP4728_VREF;
-		MCP4728FastWrite(3, &dac2);
-		__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_3,2048);
-		__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_4,2048);
-		osDelay(2000);
+//	cnt ++;
+//	struct mcu_hand_angle_t *mcu_angle_evt = AndroidDatagramEvtAlloc(sizeof (*mcu_angle_evt));
+//	if(mcu_angle_evt){
+//		ANDROID_DATAGRAM_INIT((*mcu_angle_evt), mcu_hand_angle);
+//		mcu_angle_evt->angle[0] = 20;
+//		mcu_angle_evt->angle[1] = 20;
+//		mcu_angle_evt->angle[2] = 20;
+//		mcu_angle_evt->angle[3] = 20;
+//		mcu_angle_evt->angle[4] = cnt;
+//		AndroidDatagramEvtSend(mcu_angle_evt);
+//		if(cnt == 100){
+//			cnt = 0;
+//		}
+//	}
+//	osDelay(20);	
+	
+//	struct mcu_speed_t *mcu_speed_evt = AndroidDatagramEvtAlloc(sizeof (*mcu_speed_evt));
+//	if(mcu_speed_evt){
+//		ANDROID_DATAGRAM_INIT((*mcu_speed_evt), mcu_speed);		
+//		mcu_speed_evt->head.cnt = cnt;
+//		mcu_speed_evt->speed = 03;
+//		AndroidDatagramEvtSend(mcu_speed_evt);
+//	}
+//	osDelay(20);		
+//	
+//	struct mcu_version_t *mcu_version_evt = AndroidDatagramEvtAlloc(sizeof (*mcu_version_evt));
+//	if(mcu_version_evt){
+//		ANDROID_DATAGRAM_INIT((*mcu_version_evt), mcu_version);				
+//		mcu_version_evt->head.cnt = cnt;
+//		mcu_version_evt->version = 0x1003;
+//		AndroidDatagramEvtSend(mcu_version_evt);
+//	}
+//	osDelay(20);			
+//	
+//		dac1.dac[0] = 0.4*MCP4728_VREF;
+//		dac1.dac[1] = 0.5*MCP4728_VREF;
+//		dac1.dac[2] = 0.6*MCP4728_VREF;
+//		MCP4728FastWrite(2, &dac1);
+//		dac2.dac[0] = 0.99*MCP4728_VREF;
+//		dac2.dac[1] = 0.1*MCP4728_VREF;
+//		MCP4728FastWrite(3, &dac2);
+//		__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_3,2048);
+//		__HAL_TIM_SetCompare(&htim3,TIM_CHANNEL_4,2048);
+//		
+//	
 		osDelay(2000);
 	
 	}
