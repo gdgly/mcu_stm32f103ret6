@@ -14,6 +14,10 @@ struct android_share_t android_share;
 extern uint32_t gloves_access_mark;
 extern osMutexId glove_sensor_mutex_id;
 
+osTimerId glove_timer;
+osTimerDef (glove_timer_init, glove_angle_timer_process);
+
+
 osMailQDef(sensor_android_tx, 30, uint8_t[MAX_SIZE_OF_SERIAL_DATAGRAM_EVENT]); 
 static osMailQId mail_queue_id_for_android_tx; 
 
@@ -26,7 +30,9 @@ osThreadId tid_thread_of_android_tx;                                          //
 osThreadDef (thread_of_android_tx, osPriorityNormal, 1, 0);                   // thread object
 
 int init_tid_thread_of_android_rx (void) {
-
+	
+	glove_timer =	osTimerCreate(osTimer(glove_timer_init), osTimerPeriodic, NULL);
+	
   tid_thread_of_android_rx = osThreadCreate (osThread(thread_of_android_rx), NULL);
   if (!tid_thread_of_android_rx) return(-1);
   
@@ -158,11 +164,13 @@ int mcu_to_android_datagram_send(void *msg, const size_t msg_len)
 //	*p++ = SERIAL_DATAGRAM_END_CHR;
 	*(p + msg_len) = 0xff;
 	ret = send_raw_datagram_to_serial(ANDROID_UART_NO, buf, msg_len + 1);
+//	ret = send_raw_datagram_to_serial(ANDROID_UART_NO, buf, p - buf);
 	return ret;
 }
 
 uint16_t motor_pwm = 2;
-
+uint8_t glove_angle_state[5];
+uint8_t glove_angle_cmd[5];
 void android_rev_process(const void *msg, size_t msg_len)
 {
 //	int i;
@@ -175,29 +183,31 @@ void android_rev_process(const void *msg, size_t msg_len)
 		const struct android_SetHandAngle_t *hand_angle_cmd = msg;
 		uint8_t valve = 0x00;
 
+		memcpy(glove_angle_cmd, hand_angle_cmd->angle, sizeof(glove_angle_cmd));
+		
 		if(hand_angle_cmd->angle[0]< 60){
-			valve = (VALVE_SET)|valve;
+			valve = (VALVE_RESET)|valve;
 		}else if(hand_angle_cmd->angle[0] < 120){
 			
 		}else if(hand_angle_cmd->angle[0] < 180){
-			valve = (VALVE_RESET)|valve;
+			valve = (VALVE_SET)|valve;
 		}else{
-			valve = (VALVE_RESET)|valve;
+			valve = (VALVE_SET)|valve;
 		}	
 		int i;
 		for(i=1;i<5;i++){
-			if(hand_angle_cmd->angle[0] < 30){
-				valve = (VALVE_SET<<i)|valve;
-			}else if(hand_angle_cmd->angle[0] < 120){
+			if(hand_angle_cmd->angle[i] < 30){
+				valve = (VALVE_RESET<<i)|valve;
+			}else if(hand_angle_cmd->angle[i] < 120){
 				
-			}else if(hand_angle_cmd->angle[0] < 180){
-				valve = (VALVE_RESET<<i)|valve;
+			}else if(hand_angle_cmd->angle[i] < 180){
+				valve = (VALVE_SET<<i)|valve;
 			}else{
-				valve = (VALVE_RESET<<i)|valve;
+				valve = (VALVE_SET<<i)|valve;
 			}	
 		}
 		sy08_set_valve(valve);	
-		
+		osTimerStart(glove_timer, 100);
 		
 	}else if(head->type == SetHandSpeed){
 		osDelay(5);
@@ -217,6 +227,7 @@ void android_rev_process(const void *msg, size_t msg_len)
 		AndroidDatagramEvtSend(hand_scene_evt);
 		
 		android_share.scene = hand_scene_cmd->scene;
+		memset(glove_angle_state, 0 ,sizeof(glove_angle_state));
 		switch(hand_scene_cmd->scene){
 			case 0:
 				sy08_pump_reset();
@@ -226,7 +237,7 @@ void android_rev_process(const void *msg, size_t msg_len)
 
 			break;
 			case 2:
-				sy08_pump_set(70 + 10*(4 - motor_pwm));
+//				sy08_pump_set(70 + 10*(4 - motor_pwm));
 			break;
 			case 3:
 				sy08_pump_set(70 + 10*(4 - motor_pwm));
@@ -245,7 +256,7 @@ void android_rev_process(const void *msg, size_t msg_len)
 				sy08_pump_reset();
 				sy08_set_valve(0);
 			break;
-		}				
+		}
 		
 	}else if(head->type == SetProof){
 		
@@ -366,6 +377,43 @@ void android_rev_process(const void *msg, size_t msg_len)
 		
 	}else{
 	
+	}
+}
+
+//计算患侧手的角度
+#define GLOVE_BASE_TIME 2500
+
+uint8_t glove_timer_cnt = 0;
+
+void glove_angle_timer_process(void const *argument)
+{
+	int i;
+	HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_13);
+	struct mcu_noti_hand_angle_t *p = AndroidDatagramEvtAlloc(sizeof (*p));
+	if(p){
+		ANDROID_DATAGRAM_INIT((*p), mcu_noti_hand_angle);
+		for(i=0;i<5;i++){
+			if((glove_angle_cmd[i] == 0)&&(glove_angle_state[i] == 0)){
+				p->angle[i] = 0;			
+			}else if((glove_angle_cmd[i] != 0)&&(glove_angle_state[i] == 0)){
+				p->angle[i] = glove_angle_cmd[i]*glove_timer_cnt*0.04;
+			}else if((glove_angle_cmd[i] == 0)&&(glove_angle_state[i] != 0)){
+				p->angle[i] = glove_angle_state[i]*(1 - glove_timer_cnt*0.04);
+			}else if((glove_angle_cmd[i] != 0)&&(glove_angle_state[i] != 0)){
+				p->angle[i] = glove_angle_cmd[i];
+			}
+		}
+		p->mode = 1;
+		AndroidDatagramEvtSend(p);		
+	}
+
+	glove_timer_cnt ++;
+	if(glove_timer_cnt > GLOVE_BASE_TIME/100){
+		
+		memcpy(glove_angle_state, glove_angle_cmd, sizeof(glove_angle_state));
+		
+		glove_timer_cnt = 0;
+		osTimerStop(glove_timer);
 	}
 }
 

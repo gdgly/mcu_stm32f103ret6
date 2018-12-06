@@ -84,6 +84,8 @@ void sy08_set_valve(const uint8_t valve);
 
 int get_msg_from_serial(uint8_t No, uint8_t *raw_datagram, size_t max_size, size_t *actual_size_ptr, size_t *skipped_byte_count_ptr);
 int send_raw_datagram_to_serial(uint8_t No, const void *raw_datagram, size_t raw_datagram_len);
+uint8_t read_data_from_eeprom(void *msg, uint16_t Address, uint8_t msg_len);
+uint8_t write_data_to_eeprom(void *msg, uint16_t Address, uint8_t msg_len);
 
 #define VALVE_RESET 0
 #define VALVE_SET 1

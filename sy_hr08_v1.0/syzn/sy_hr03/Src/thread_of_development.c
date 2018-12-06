@@ -17,6 +17,20 @@ extern TIM_HandleTypeDef htim3;
 MCP4728_TypeDef dac1;
 MCP4728_TypeDef dac2;
 
+//uint8_t timer_cnt = 0;
+
+//osTimerId my_timer_id;
+//void my_timer(void const *argument){
+//	HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_13);
+//	timer_cnt ++ ;
+//	if(timer_cnt == 10){
+//		timer_cnt = 0;
+//		osTimerStop(my_timer_id);
+//	}
+//	return;
+//}
+//osTimerDef (timer1, my_timer);
+
 int init_thread_of_development(void) {
 
   tid_thread_of_development = osThreadCreate (osThread(thread_of_development), NULL);
@@ -27,6 +41,7 @@ int init_thread_of_development(void) {
 
 void thread_of_development (void const *argument) {
 	
+	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_4,GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOE,GPIO_PIN_11,GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOE,GPIO_PIN_4,GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOE,GPIO_PIN_14,GPIO_PIN_SET);
@@ -36,12 +51,20 @@ void thread_of_development (void const *argument) {
 	HAL_GPIO_WritePin(GPIOF,GPIO_PIN_0,GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_15,GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,GPIO_PIN_RESET);
+//	HAL_GPIO_WritePin(GPIOB,GPIO_PIN_12,GPIO_PIN_SET);
+//	HAL_GPIO_WritePin(GPIOB,GPIO_PIN_13,GPIO_PIN_SET);
+//	HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_SET);
 	osDelay(200);
-	dac1.addr = MCP4728_DEVICE_ADDR;
-	dac2.addr = MCP4728_DEVICE_ADDR;
-	MCP4728WriteVref(2, &dac1, 1);
-	MCP4728WriteVref(3, &dac2, 0);
+//	dac1.addr = MCP4728_DEVICE_ADDR;
+//	dac2.addr = MCP4728_DEVICE_ADDR;
+//	MCP4728WriteVref(2, &dac1, 1);
+//	MCP4728WriteVref(3, &dac2, 0);
 	osDelay(100);
+	
+
+//	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_4,GPIO_PIN_RESET);
+//	osDelay(3000);
+//	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_4,GPIO_PIN_SET);	
 //	struct mcu_scene_t *mcu_scene_evt = AndroidDatagramEvtAlloc(sizeof (*mcu_scene_evt));
 //	if(mcu_scene_evt){
 //		ANDROID_DATAGRAM_INIT((*mcu_scene_evt), mcu_scene);				
@@ -49,6 +72,9 @@ void thread_of_development (void const *argument) {
 //		AndroidDatagramEvtSend(mcu_scene_evt);			
 //	}	
 //  uint8_t cnt;
+
+//	my_timer_id = osTimerCreate(osTimer(timer1), osTimerPeriodic, NULL);
+//	osTimerStart(my_timer_id, 1000);
 	while(1){
 //	cnt ++;
 //	struct mcu_hand_angle_t *mcu_angle_evt = AndroidDatagramEvtAlloc(sizeof (*mcu_angle_evt));

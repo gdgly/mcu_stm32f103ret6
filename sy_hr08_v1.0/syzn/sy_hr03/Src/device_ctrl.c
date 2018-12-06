@@ -6,7 +6,8 @@
 #include "device_ctrl.h"
 #include "uart-API.h"
 #include "uart-line-IO.h"
-
+#include "bsp_EEPROM.h"
+#include "thread_of_LCM_uart.h"
 
 
 void sy08_pump_set(uint8_t cycle)
@@ -101,4 +102,33 @@ int send_raw_datagram_to_serial(uint8_t No, const void *raw_datagram, size_t raw
 	// TODO: Wait time should not be 'forever'. if it's out of time, should Call StopUartXX.
 	return 1;
 }
+
+//extern uint8_t eeprom_data_list[data_register_list_max];
+
+uint8_t write_data_to_eeprom(void *msg, uint16_t Address, uint8_t msg_len)
+{
+//	uint8_t buff[64];
+//	uint8_t *s = buff;
+//	uint16_t *p = msg;
+
+//	while(p < (uint16_t *)msg + msg_len/2){
+//		if(eeprom_data_list[p - (uint16_t *)msg]){
+//			*s = *p;		
+//			s++;			
+//		}
+//		p++;	
+//	}
+//	uint8_t len = s - buff;
+//	return EEPROM_WriteBytes(buff, Address, len);
+	uint8_t *p = msg;
+	return EEPROM_WriteBytes(p, Address, msg_len);
+}
+
+uint8_t read_data_from_eeprom(void *msg, uint16_t Address, uint8_t msg_len)
+{
+	uint8_t *p = msg;
+	return EEPROM_ReadBytes(p, Address, msg_len);
+	return 1;
+}
+
 

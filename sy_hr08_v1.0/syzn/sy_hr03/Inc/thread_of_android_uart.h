@@ -201,7 +201,7 @@ void *AndroidDatagramEvtAlloc(size_t size);
 int AndroidDatagramEvtSend(void *ptr);
 void AndroidDatagramEvtFree(void *ptr);
 void android_rev_process(const void *msg, size_t msg_len);
-
+void glove_angle_timer_process(void const *argument);
 
 #endif
 

@@ -10,8 +10,8 @@
 #define I2C_WR	        0		/* Ð´¿ØÖÆbit */
 #define I2C_RD	        1		/* ¶Á¿ØÖÆbit */
 
-#define I2C_GPIO_CLK_ENABLE()               __HAL_RCC_GPIOB_CLK_ENABLE()
-#define I2C_GPIO_PORT                       GPIOB   
+#define I2C_GPIO_CLK_ENABLE()               __HAL_RCC_GPIOE_CLK_ENABLE()
+#define I2C_GPIO_PORT                       GPIOE   
 #define I2C_SCL_PIN                         GPIO_PIN_8
 #define I2C_SDA_PIN                         GPIO_PIN_9
 
